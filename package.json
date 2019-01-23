@@ -1,0 +1,41 @@
+{
+  "name": "speech-to-morse",
+  "version": "1.0.0",
+  "description": "speech-to-morse",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "standard && parcel src/index.html -p 3000 --open",
+    "build": "rm -rf release && standard && parcel build src/index.html -d release --public-url ./ && cp -r src/images release && cp src/browserconfig.xml release && cp src/mstile-150x150.png release && cp src/favicon.ico release && cp src/up.json release && cd release && up"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcusasplund/speech-to-morse.git"
+  },
+  "author": "marcus@itcm.se",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marcusasplund/speech-to-morse/issues"
+  },
+  "homepage": "https://github.com/marcusasplund/speech-to-morse#readme",
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "dist/",
+      "release/",
+      "build/"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "7.2.3",
+    "autoprefixer": "^9.4.5",
+    "babel-eslint": "^10.0.1",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "node-sass": "^4.11.0",
+    "parcel-bundler": "^1.11.0",
+    "standard": "*"
+  },
+  "dependencies": {
+    "hyperapp": "^1.2.9"
+  }
+}
