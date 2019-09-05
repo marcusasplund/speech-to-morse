@@ -1,3 +1,4 @@
+/* global webkitSpeechRecognition */
 /* eslint-disable new-cap */
 import { h, app } from 'hyperapp'
 import './styles/app.scss'
@@ -60,6 +61,7 @@ const units = {
   space: 490
 }
 const state = {
+  morse_code: '',
   recognizing: false,
   final_transcript: '',
   ignore_onend: false,
@@ -72,22 +74,21 @@ const actions = {
 
   set: x => x,
 
-  init: () => (state, actions) => {
-
-  },
-
   startListening: (e) => (state, actions) => {
-    recognition = new window.webkitSpeechRecognition()
+    recognition = new webkitSpeechRecognition()
     audioCtx = new (window.AudioContext || window.webkitAudioContext)()
     recognition.continuous = true
     recognition.interimResults = true
-    recognition.onstart = () => {
+    recognition.onstart = function () {
       actions.set({
-        recognizing: true
+        recognizing: true,
+        final_transcript: '',
+        previousQuestion: '',
+        morse_code: ''
       })
     }
 
-    recognition.onerror = (event) => {
+    recognition.onerror = function (event) {
       if (event.error === 'no-speech') {
         actions.set({
           info: 'info_no_speech',
@@ -116,9 +117,10 @@ const actions = {
       }
     }
 
-    recognition.onend = () => {
+    recognition.onend = function () {
       actions.set({
-        recognizing: false
+        recognizing: false,
+        previousQuestion: ''
       })
       if (state.ignore_onend) {
         return
@@ -130,19 +132,17 @@ const actions = {
       }
     }
 
-    recognition.onresult = (event) => {
-      actions.set({
-        interim_transcript: ''
-      })
+    recognition.onresult = function (event) {
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
           actions.set({
-            final_transcript: state.final_transcript += event.results[i][0].transcript
+            final_transcript: event.results[i][0].transcript,
+            interim_transcript: ''
           })
-          actions.generateMorse()
         } else {
           actions.set({
-            interim_transcript: state.interim_transcript += event.results[i][0].transcript
+            interim_transcript: event.results[i][0].transcript,
+            final_transcript: ''
           })
         }
       }
@@ -154,6 +154,7 @@ const actions = {
       actions.set({
         previousQuestion: state.final_transcript
       })
+      actions.generateMorse()
       recognition.stop()
     }
     if (state.recognizing) {
@@ -161,17 +162,15 @@ const actions = {
       return
     }
     actions.set({
-      final_transcript: '',
       ignore_onend: false,
       start_timestamp: e.timeStamp
     })
     recognition.start()
   },
 
-  generateMorse: function (input) {
-    let destination = audioCtx.destination
-    let letters = input.trim().replace(/\s+/, ' ').split('')
-    let letter
+  generateMorse: () => (state, actions) => {
+    let transcript = state.final_transcript || state.interim_transcript
+    let letters = transcript.trim().replace(/\s+/, ' ').split('')
     let oscillator = audioCtx.createOscillator()
     let offset = 0
     let morse
@@ -179,18 +178,20 @@ const actions = {
     oscillator.type = 'triangle'
     oscillator.start(0)
 
-    const connect = () => {
-      oscillator.connect(destination)
+    let connect = function () {
+      oscillator.connect(audioCtx.destination)
     }
 
-    const disconnect = () => {
+    let disconnect = function () {
       oscillator.disconnect(0)
     }
 
     while (letters.length) {
-      letter = letters.shift()
+      let letter = letters.shift().toLowerCase()
       morse = morseAlphabet[letter].split('')
-
+      actions.set({
+        morse_code: state.morse_code += morseAlphabet[letter]
+      })
       while (morse.length) {
         setTimeout(connect, offset)
         offset += morse.shift() === '.' ? units.short : units.long
@@ -220,8 +221,7 @@ const actions = {
 
 const view = (state, actions) => (
   h('main', {
-    class: 'wrapper',
-    oncreate: el => actions.init()
+    class: 'wrapper'
   }, [
     h('header', {}, [
       h('div', {
@@ -235,11 +235,13 @@ const view = (state, actions) => (
     h('div', {
       class: 'container paper'
     }, [
-      h('p', {}, `Info: ${state.info}`),
-      h('p', {}, `${state.final_transcript || state.interim_transcript}`),
       h('button', {
+        class: `${state.recognizing ? 'pulse-button pulse' : 'pulse-button'}`,
         onclick: e => actions.startListening(e)
-      }, 'start')
+      }),
+      h('p', {}, `${state.interim_transcript || state.final_transcript}`),
+      h('p', {}, `${state.morse_code}`),
+      h('p', {}, state.info ? `Info: ${state.info}` : '')
     ])
   ])
 )

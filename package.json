@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "standard && parcel src/index.html -p 3000 --open",
-    "build": "rm -rf release && standard && parcel build src/index.html -d release --public-url ./ && cp -r src/images release && cp src/browserconfig.xml release && cp src/mstile-150x150.png release && cp src/favicon.ico release && cp src/up.json release && cd release && up"
+    "build": "rm -rf release && standard && parcel build src/index.html -d release --public-url ./ && cp src/browserconfig.xml release && cp src/mstile-150x150.png release && cp src/favicon.ico release && cp src/up.json release && cd release && up"
   },
   "repository": {
     "type": "git",
@@ -26,16 +26,16 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "7.2.3",
-    "autoprefixer": "^9.4.5",
-    "babel-eslint": "^10.0.1",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "7.5.5",
+    "autoprefixer": "^9.6.1",
+    "babel-eslint": "^10.0.3",
     "babel-plugin-transform-remove-console": "^6.9.4",
-    "node-sass": "^4.11.0",
-    "parcel-bundler": "^1.11.0",
+    "node-sass": "^4.12.0",
+    "parcel-bundler": "^1.12.3",
     "standard": "*"
   },
   "dependencies": {
-    "hyperapp": "^1.2.9"
+    "hyperapp": "^1.x.x"
   }
 }
